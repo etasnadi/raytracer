@@ -1,53 +1,81 @@
+#include "shader.h"
+
 #include <iostream>
 #include <memory>
 
 #include "raytracer_basics.h"
-#include "shader.h"
 
-glm::vec3 rafractionDir(const Ray& incRay, const glm::vec3& normal, float& kn){
-    glm::vec3 proj = incRay.direction/std::abs(glm::dot(incRay.direction, normal)); // V' in the paper
-    float kf = 1.f / std::sqrt(
-        sq(kn) * sq(glm::length(proj)) - 
-        sq(glm::length(proj + normal))
-    );
-    return kf * (normal + proj) - normal;                 // P in the paper
+glm::vec3 computeRafractionDirection(const Ray &incidentRay,
+                                     const glm::vec3 &surfaceNormal,
+                                     float &kn) {
+  glm::vec3 projectedVector =
+      incidentRay.direction /
+      std::abs(
+          glm::dot(incidentRay.direction, surfaceNormal)); // V' in the paper
+  float kf =
+      1.0f / std::sqrt(square(kn) * square(glm::length(projectedVector)) -
+                       square(glm::length(projectedVector + surfaceNormal)));
+  return kf * (surfaceNormal + projectedVector) -
+         surfaceNormal; // P in the paper
 }
 
-glm::vec3 reflectionDir(const Ray& incRay, const glm::vec3& surfNorm){   
-    glm::vec3 proj = incRay.direction/std::abs(glm::dot(incRay.direction, surfNorm));  // V' in the paper
-    return proj + 2.f*surfNorm;                                            // R in the paper
+glm::vec3 computeReflectionDirection(const Ray &incidentRay,
+                                     const glm::vec3 &surfaceNormal) {
+  glm::vec3 projectedVector =
+      incidentRay.direction /
+      std::abs(
+          glm::dot(incidentRay.direction, surfaceNormal)); // V' in the paper
+  return projectedVector + 2.0f * surfaceNormal;           // R in the paper
 }
 
-bool Shader::computeRefractiveComponent(std::shared_ptr<Scene> scene, const Ray& incRay, const Intersection& is, glm::vec3& refracted, float refractiveIndex){
-    float adjustNormSign = 1.;
-    if (glm::dot(is.surfNormal, incRay.direction) > -0.001){
-        adjustNormSign = -1.;
-    }
+bool Shader::computeRefractiveComponent(std::shared_ptr<Scene const> scene,
+                                        const Ray &incidentRay,
+                                        const Intersection &surfaceIntersection,
+                                        float refractiveIndex,
+                                        glm::vec3 &refractedColor) const {
+  float adjustNormSign = 1.0f;
+  if (glm::dot(surfaceIntersection.surfaceNormal, incidentRay.direction) >
+      -0.001f) {
+    adjustNormSign = -1.0f;
+  }
 
-    glm::vec3 adjustedNormal = adjustNormSign*is.surfNormal;
-    glm::vec3 refrDir = rafractionDir(incRay, adjustedNormal, refractiveIndex);
-    glm::vec3 fixedSurfPt = is.surfPt - bounceSurfDist * adjustedNormal;
-    Ray refractionRay(fixedSurfPt, refrDir, incRay.bounces - 1);
-    glm::vec3 ref;
-    bool result = scene->trace(refractionRay, ref);
-    // debug
-    float eps = .0001;
-    if (std::abs(incRay.direction.x) < eps && std::abs(incRay.direction.y) < eps){
-        std::cout << "Normal: " << adjustedNormal << "Incoming: " << incRay << " refracted: " << refractionRay <<  " color: " << ref << " [" << incRay.bounces << "]" << std::endl;
-    }
-    
-    refracted = ref;
-    return result;
+  glm::vec3 adjustedNormal = adjustNormSign * surfaceIntersection.surfaceNormal;
+  glm::vec3 refrDir =
+      computeRafractionDirection(incidentRay, adjustedNormal, refractiveIndex);
+  glm::vec3 fixedSurfPt =
+      surfaceIntersection.surfacePoint - bounceSurfDist * adjustedNormal;
+  Ray refractionRay(fixedSurfPt, refrDir, incidentRay.bounces - 1);
+  glm::vec3 tmpRefractedColor;
+  bool result = scene->trace(refractionRay, tmpRefractedColor);
+
+  float debugEps = .0001f;
+  if (std::abs(incidentRay.direction.x) < debugEps &&
+      std::abs(incidentRay.direction.y) < debugEps) {
+#ifdef DEBUG_STDOUT
+    std::cout << "Normal: " << adjustedNormal << "Incoming: " << incidentRay
+              << " refracted: " << refractionRay
+              << " color: " << tmpRefractedColor << " [" << incidentRay.bounces
+              << "]" << std::endl;
+#endif
+  }
+
+  refractedColor = tmpRefractedColor;
+  return result;
 }
 
-bool Shader::computeReflectiveComponent(std::shared_ptr<Scene> scene, const Ray& incRay, const Intersection& is, glm::vec3& reflected){
-    glm::vec3 fixedSurfPt = is.surfPt + bounceSurfDist * is.surfNormal;
-    glm::vec3 refDir = reflectionDir(incRay, is.surfNormal);
+bool Shader::computeReflectiveComponent(std::shared_ptr<Scene const> scene,
+                                        const Ray &incidentRay,
+                                        const Intersection &surfaceIntersection,
+                                        glm::vec3 &reflectedColor) const {
+  glm::vec3 fixedSurfPt = surfaceIntersection.surfacePoint +
+                          bounceSurfDist * surfaceIntersection.surfaceNormal;
+  glm::vec3 refDir = computeReflectionDirection(
+      incidentRay, surfaceIntersection.surfaceNormal);
 
-    Ray reflectionRay(fixedSurfPt, refDir, incRay.bounces - 1);
-    glm::vec3 ref;
+  Ray reflectionRay(fixedSurfPt, refDir, incidentRay.bounces - 1);
+  glm::vec3 reflectedColorTmp;
 
-    bool result = scene->trace(reflectionRay, ref);
-    reflected = ref;
-    return result;
+  bool result = scene->trace(reflectionRay, reflectedColorTmp);
+  reflectedColor = reflectedColorTmp;
+  return result;
 }

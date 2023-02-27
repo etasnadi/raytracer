@@ -4,9 +4,9 @@
 
 #include "display.h"
 
-int main(int argc, char **argv){
-    QApplication app (argc, argv);
-    Display display;
-    display.queryNextFrame();
-    return app.exec();
+int main(int argc, char **argv) {
+  QApplication app(argc, argv);
+  Display display;
+  display.queryNextFrame();
+  return app.exec();
 }

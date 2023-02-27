@@ -1,10 +1,12 @@
 Raytracer based on Whitted, 1980 paper.
 
+Only depends on `Qt` and `cmake` & `glm`. Tested on Ubuntu 20.04 (should work on Windows as well).
+
+Build instructions: install the dependencies and use `cmake`.
+
 ![alt text](sample.png)
 
 The room scene showing the refractions and reflections for thin and dense objects (shadows are disabled, only the blue ball supports it).
-
-Only depends on `Qt` and `cmake` & `glm`. Tested on Ubuntu 20.04 (should work on Windows as well).
 
 Two *primitives* implemented so far:
 * Triangle

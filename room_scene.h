@@ -5,7 +5,7 @@
 
 class RoomScene : public Scene {
 public:
-    void buildScene();
+  void buildScene();
 };
 
 #endif
