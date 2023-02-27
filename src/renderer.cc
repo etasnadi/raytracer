@@ -1,4 +1,6 @@
 #include <cmath>
+#include <glm/fwd.hpp>
+#include <glm/matrix.hpp>
 #include <iostream>
 #include <limits>
 #include <memory>
@@ -20,34 +22,6 @@ glm::vec3 Colors::cyan;
 glm::vec3 Colors::black;
 glm::vec3 Colors::gray;
 glm::vec3 Colors::white;
-
-template <class T>
-ColorBuffer<T>::ColorBuffer(int a_w, int a_h) : w(a_w), h(a_h) {
-  c = std::vector<T>(w * h);
-}
-
-template <class T> int ColorBuffer<T>::idx(int x, int y) { return y * w + x; }
-
-template <class T> void ColorBuffer<T>::setPixel(int x, int y, T intensity) {
-  maxIntensity.x = std::max(maxIntensity.x, intensity.x);
-  maxIntensity.y = std::max(maxIntensity.y, intensity.y);
-  maxIntensity.z = std::max(maxIntensity.z, intensity.z);
-
-  minIntensity.x = std::min(minIntensity.x, intensity.x);
-  minIntensity.y = std::min(minIntensity.y, intensity.y);
-  minIntensity.z = std::min(minIntensity.z, intensity.z);
-
-  c[idx(x, y)] = intensity;
-}
-
-template <class T> T ColorBuffer<T>::getPixel(int x, int y, bool normalize) {
-  glm::vec3 color = c[idx(x, y)];
-  if (normalize) {
-    return (color - minIntensity) / (color + maxIntensity);
-  } else {
-    return color;
-  }
-}
 
 glm::mat3x3 getRotationMatrixX(float rotRad) {
   glm::mat3x3 rot(0.);
@@ -95,8 +69,6 @@ std::tuple<glm::vec3, glm::vec3, glm::vec3> getViewport(glm::vec2 viewport_size,
   return {viewport_tl, viewport_v1, viewport_v2};
 }
 
-template class ColorBuffer<glm::vec3>;
-
 Renderer::Renderer(uint32_t screen_width, uint32_t screen_height) {
   Colors::red = glm::vec3(1.0f, 0.0f, 0.0f);
   Colors::green = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -119,6 +91,7 @@ Renderer::Renderer(uint32_t screen_width, uint32_t screen_height) {
   std::tie(viewport_tl, viewport_v1, viewport_v2) = viewport;
 
   scene = std::make_shared<RoomScene>();
+  //(scene -> textures).push_back(textures[0]);
   scene->buildScene();
 }
 
@@ -131,11 +104,39 @@ void Renderer::applyInputTransforms() {
   ry = 0.0f;
 }
 
+void Renderer::registerTexture(ColorBuffer<glm::vec3>& texture){
+  std::cout << "Registering texture..." << std::endl;
+  textures.push_back(std::make_shared<ColorBuffer<glm::vec3>>(texture));
+}
+
 ColorBuffer<glm::vec3> Renderer::render() {
   applyInputTransforms();
 
-  ColorBuffer<glm::vec3> colBuff(displaySize.x, displaySize.y);
+  /*
+  glm::vec3 v1(3.f, 0.f, 0.f);
+  glm::vec3 v2(0.f, 7.f, 0.f);
 
+  glm::vec3 p(5., 10., 0.f);
+
+  glm::mat3x3 m;
+  m[0][0] = v1[0];
+  m[1][0] = v1[1];
+
+  m[0][1] = v2[0];
+  m[1][1] = v2[1];
+
+  glm::mat3x3 i = glm::inverse(m);
+  glm::vec3 c = i*p;
+  glm::vec3 r = (c[0]*v1 + c[1]*v2);
+  std::cout << "Base: " << v1 << "," << v2 << std::endl;
+  std::cout << "Lambda: " << c << std::endl;
+  std::cout << "Vector: " << p << std::endl;
+  std::cout << "Base*Lambda: " << r << std::endl;
+
+  return colBuff;
+  */
+
+  ColorBuffer<glm::vec3> colBuff(displaySize.x, displaySize.y);
 #pragma omp parallel
   {
 #pragma omp for

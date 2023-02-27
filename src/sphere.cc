@@ -53,8 +53,8 @@ bool Sphere::intersect(const Ray &ray, glm::vec3 &outIntersectionPoint,
 
   float d1;
   float d2;
-  bool is = RayIntersectsSphere(ray, *this, intersectNeg, intersectPos, d1, d2);
-  if (is) {
+  bool intersection = RayIntersectsSphere(ray, *this, intersectNeg, intersectPos, d1, d2);
+  if (intersection) {
     glm::vec3 n1 = normalize(intersectNeg - center);
     glm::vec3 n2 = normalize(intersectPos - center);
     // 2) Test self intersection
@@ -75,7 +75,7 @@ bool Sphere::intersect(const Ray &ray, glm::vec3 &outIntersectionPoint,
     c = color;
     return true;
   }
-  return is;
+  return intersection;
 }
 
 void Sphere::transform(const glm::mat3x3 &transformMatrix) {

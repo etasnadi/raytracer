@@ -10,13 +10,13 @@
 class Shader {
 public:
   glm::vec3 color;
-  float diffuseWeight = .5f;
-  float reflectedWeight = .5f;
-  float refractedWeight = 0.f;
+  float diffuseWeight = 0.5f;
+  float reflectedWeight = 0.5f;
+  float refractedWeight = 0.0f;
   bool enableShadows = true;
   float refractiveIndex = 1.0f;
-  float bounceSurfDist = .05f;
-  float weightThreshold = 0.001;
+  float bounceSurfDist = 0.05f;
+  float weightThreshold = 0.001f;
 
   Shader() {}
   Shader(glm::vec3 color) : color(color) {}

@@ -13,6 +13,8 @@ else()
     project(app VERSION 1.0.0 LANGUAGES CXX)
 endif()
 
+set(SOURCE_DIR "src")
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -28,18 +30,20 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 find_package(OpenMP)
 
 add_library(renderer SHARED 
-    renderer.cc
-    shader.cc
-    raytracer_basics.cc
-    triangle.cc
-    sphere.cc
-    models.cc
-    room_scene.cc
+    ${SOURCE_DIR}/renderer.cc
+    ${SOURCE_DIR}/shader.cc
+    ${SOURCE_DIR}/raytracer_basics.cc
+    ${SOURCE_DIR}/triangle.cc
+    ${SOURCE_DIR}/sphere.cc
+    ${SOURCE_DIR}/models.cc
+    ${SOURCE_DIR}/room_scene.cc
+    ${SOURCE_DIR}/basic_types.cc
 )
 
 add_executable(app
-    app.cc
-    display.cc
+    ${SOURCE_DIR}/app.cc
+    ${SOURCE_DIR}/display.cc
+    ${SOURCE_DIR}/basic_types.cc
 )
 
 if(USE_CUDA)

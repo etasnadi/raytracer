@@ -7,8 +7,9 @@
 #include <glm/glm.hpp>
 
 #include "cudastuff.h"
+#include "basic_types.h"
 
-//#define DEBUG_STDOUT
+// #define DEBUG_STDOUT
 
 class Colors {
 public:
@@ -37,7 +38,7 @@ public:
   glm::vec3 origin;
   glm::vec3 direction;
   CUDA_HOSTDEV Ray(glm::vec3 origin, glm::vec3 direction, uint32_t bounces = 5)
-      : origin(origin), direction(direction), bounces(bounces){};
+      : origin(origin), direction(direction), bounces(bounces){}
 };
 
 CUDA_HOSTDEV bool _closestIntersection(
@@ -55,13 +56,14 @@ public:
   glm::vec3 lightPosition;
   glm::vec3 lightColor;
   Light(glm::vec3 lightPosition, glm::vec3 lightColor)
-      : lightPosition(lightPosition), lightColor(lightColor){};
+      : lightPosition(lightPosition), lightColor(lightColor){}
 };
 
 class Scene : public std::enable_shared_from_this<Scene> {
 public:
   std::vector<std::shared_ptr<Object>> sceneObjects;
   std::vector<std::shared_ptr<Light>> lights;
+  std::vector<std::shared_ptr<ColorBuffer<glm::vec3>>> textures;
 
   void transform(glm::mat3x3 trans);
   CUDA_HOSTDEV bool closestIntersection(const Ray &ray,
@@ -78,7 +80,7 @@ class Object {
 public:
   glm::vec3 color;
 
-  Object(glm::vec3 color) : color(color){};
+  Object(glm::vec3 color) : color(color){}
   CUDA_HOSTDEV virtual bool intersect(const Ray &ray,
                                       glm::vec3 &outIntersectionPoint,
                                       glm::vec3 &outNormal,

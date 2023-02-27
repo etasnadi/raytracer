@@ -4,7 +4,8 @@ Only depends on `Qt` and `cmake` & `glm`. Tested on Ubuntu 20.04 (should work on
 
 Build instructions: install the dependencies and use `cmake`.
 
-![alt text](sample.png)
+![Basic optical effects](sample.png)
+![Textures](sample-texture.png)
 
 The room scene showing the refractions and reflections for thin and dense objects (shadows are disabled, only the blue ball supports it).
 

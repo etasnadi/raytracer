@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -22,16 +23,24 @@ void RoomScene::buildScene() {
   std::vector<std::shared_ptr<Triangle>> boxTriangles =
       models.createBox(glm::vec3(0.0f, 0.0f, 0.0f), 256.0f, boxSideColors);
   int idx = 0;
+
   for (std::shared_ptr<Triangle> boxTriangle : boxTriangles) {
-    idx += 1;
     auto boxSideMaterial =
         std::make_shared<GenericTriangleShader>(boxTriangle->color);
-    if (idx < 5) {
+    if (idx <= 8) {
       boxSideMaterial->setProfile(0.9f, 0.1f, 0.0f);
     }
     boxSideMaterial->enableShadows = false;
+
+    if (idx == 4 * 2 ||
+        idx == 4 * 2 + 1) { // Floor triangles, apply the floor texture
+      if (textures.size() > 0) {
+        boxSideMaterial->texture = textures[0];
+      }
+    }
     boxTriangle->setShader(boxSideMaterial);
     sceneObjects.push_back(boxTriangle);
+    idx += 1;
   }
 
   // Create the square
@@ -60,15 +69,15 @@ void RoomScene::buildScene() {
                                               96.0f, Colors::white);
   auto shinySphereMaterial =
       std::make_shared<GenericSphereShader>(Colors::green);
-  shinySphereMaterial->setProfile(.05, .95, 0.0);
+  shinySphereMaterial->setProfile(0.05f, 0.95f, 0.0f);
   shinySphere->setShader(shinySphereMaterial);
 
   auto glassSphere = std::make_shared<Sphere>(glm::vec3(-128.0f, 0.0f, 64.0f),
                                               42.0f, Colors::white);
   auto glassSphereMaterial =
       std::make_shared<GenericSphereShader>(Colors::green);
-  glassSphereMaterial->setProfile(0., .1, .9);
-  glassSphereMaterial->refractiveIndex = 1.15;
+  glassSphereMaterial->setProfile(0.0f, 0.1f, 0.9f);
+  glassSphereMaterial->refractiveIndex = 1.15f;
   glassSphereMaterial->enableShadows = false;
   glassSphere->setShader(glassSphereMaterial);
 

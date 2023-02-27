@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include "cudastuff.h"
+#include "basic_types.h"
 
 CUDA_HOSTDEV bool _closestIntersection(
     const Ray &ray, const std::vector<std::shared_ptr<Object>> &objects,

@@ -45,9 +45,28 @@ bool RayIntersectsTriangle(const Ray &ray, const Triangle &inTriangle,
     return false;
 }
 
+// https://gamedev.stackexchange.com/a/23745
+// Compute barycentric coordinates (u, v, w) for
+// point p with respect to triangle (a, b, c)
+void Barycentric(const glm::vec3 p, const glm::vec3 a, const glm::vec3 b,
+                 const glm::vec3 c, float &u, float &v, float &w) {
+  glm::vec3 v0 = b - a, v1 = c - a, v2 = p - a;
+  float d00 = glm::dot(v0, v0);
+  float d01 = glm::dot(v0, v1);
+  float d11 = glm::dot(v1, v1);
+  float d20 = glm::dot(v2, v0);
+  float d21 = glm::dot(v2, v1);
+  float denom = d00 * d11 - d01 * d01;
+  v = (d11 * d20 - d01 * d21) / denom;
+  w = (d00 * d21 - d01 * d20) / denom;
+  u = 1.0f - v - w;
+}
+
 glm::vec3 GenericTriangleShader::shade(std::weak_ptr<Scene const> scene,
                                        const Ray &incidentRay,
-                                       const Intersection &intersection) const {
+                                       const Intersection &intersection,
+                                       glm::vec3 vertex0, glm::vec3 vertex1,
+                                       glm::vec3 vertex2) const {
   if (!scene.expired()) {
     std::shared_ptr<Scene const> s = scene.lock();
 
@@ -55,10 +74,10 @@ glm::vec3 GenericTriangleShader::shade(std::weak_ptr<Scene const> scene,
     glm::vec3 reflectedColor = Colors::black;
     glm::vec3 refractedColor = Colors::black;
 
-    float weightThreshold = 0.001;
+    float weightThreshold = 0.001f;
 
     glm::vec3 fixedSurfacePoint =
-        intersection.surfacePoint + .1f * intersection.surfaceNormal;
+        intersection.surfacePoint + 0.1f * intersection.surfaceNormal;
     if (incidentRay.bounces > 0) {
       if (reflectedWeight > weightThreshold) {
         computeReflectiveComponent(s, incidentRay, intersection,
@@ -72,8 +91,35 @@ glm::vec3 GenericTriangleShader::shade(std::weak_ptr<Scene const> scene,
     }
 
     if (diffuseWeight > weightThreshold) {
+      glm::vec3 diffuseBaseColor = color;
+      if (texture) {
+        // Triangle vertices mapped to the texture
+        glm::vec2 anchor0(0.1f, 0.1f);
+        glm::vec2 anchor1(0.5f, 0.9f);
+        glm::vec2 anchor2(0.9f, 0.1f);
+
+        // Barycentric coefficients
+        float vertex0Bar, vertex1Bar, vertex2Bar;
+        Barycentric(intersection.surfacePoint, vertex0, vertex1, vertex2,
+                    vertex0Bar, vertex1Bar, vertex2Bar);
+
+        // The unnormalized texture sampling coordinate
+        glm::vec2 sampleCoord =
+            anchor0 * vertex0Bar + anchor1 * vertex1Bar + anchor2 * vertex2Bar;
+
+        // The sampled color (should be bilinear at least)
+        glm::vec3 textureColor =
+            texture->getPixel(int(sampleCoord.x * texture->w),
+                              int(sampleCoord.y * texture->h));
+
+        textureColor /= 255.0f;
+        diffuseBaseColor = textureColor;
+      }
+
+      // Blend the diffuse component.
       diffuseColor = s->computeDiffuseComponent(
-          fixedSurfacePoint, intersection.surfaceNormal, color, enableShadows);
+          fixedSurfacePoint, intersection.surfaceNormal, diffuseBaseColor,
+          enableShadows);
     }
 
     return diffuseWeight * diffuseColor + reflectedWeight * reflectedColor +
@@ -115,7 +161,8 @@ glm::vec3 Triangle::excite(std::shared_ptr<Scene const> scene,
                            const Ray &incidentRay,
                            Intersection &intersection) const {
   if (shader) {
-    return shader->shade(scene, incidentRay, intersection);
+    return shader->shade(scene, incidentRay, intersection, vertex0, vertex1,
+                         vertex2);
   } else {
     return color;
   }

@@ -8,6 +8,19 @@
 #include <glm/glm.hpp>
 
 #include "renderer.h"
+#include "basic_types.h"
+
+ColorBuffer<glm::vec3> readImage(std::string fname) {
+  QImage qtImage(fname.c_str());
+  ColorBuffer<glm::vec3> texture(qtImage.width(), qtImage.height());
+  for (int x = 0; x < texture.w; x++) {
+    for (int y = 0; y < texture.h; y++) {
+      QColor col = qtImage.pixelColor(x, y);
+      texture.setPixel(x, y, glm::vec3(col.red(), col.green(), col.black()));
+    }
+  }
+  return texture;
+}
 
 RenderingCanvas::RenderingCanvas(RenderWorker *worker) {
   connect(this, &RenderingCanvas::keyPressed, worker,
@@ -26,6 +39,16 @@ void RenderWorker::render() {
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
   std::cout << "Rendering..." << std::endl;
+
+  int n_textures = renderer.scene->textures.size();
+  if(n_textures < 1){
+    auto texture = readImage("../floor.png");
+    //renderer.registerTexture(texture);
+    renderer.scene->textures.push_back(std::make_shared<ColorBuffer<glm::vec3>>(texture));
+    
+    renderer.scene -> buildScene();
+    std:: cout << "Number of textures added to the Scene object: " << n_textures << std::endl;
+  }
 
   ColorBuffer<glm::vec3> colBuff = renderer.render();
 

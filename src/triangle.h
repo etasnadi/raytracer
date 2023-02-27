@@ -2,9 +2,11 @@
 #define TRIANGLE_H
 
 #include <glm/glm.hpp>
+#include <memory>
 
 #include "raytracer_basics.h"
 #include "shader.h"
+#include "basic_types.h"
 
 class TriangleShader : public Shader {
 public:
@@ -15,14 +17,17 @@ public:
   TriangleShader(glm::vec3 color) : Shader(color) {}
   virtual glm::vec3 shade(std::weak_ptr<Scene const> scene,
                           const Ray &incidentRay,
-                          const Intersection &intersection) const = 0;
+                          const Intersection &intersection, glm::vec3 vertex0, glm::vec3 vertex1,
+                                       glm::vec3 vertex2) const = 0;
 };
 
 class GenericTriangleShader : public TriangleShader {
 public:
+  std::shared_ptr<ColorBuffer<glm::vec3>> texture;
   GenericTriangleShader(glm::vec3 color) : TriangleShader(color){};
   glm::vec3 shade(std::weak_ptr<Scene const> scene, const Ray &incidentRay,
-                  const Intersection &intersection) const;
+                  const Intersection &intersection, glm::vec3 vertex0, glm::vec3 vertex1,
+                                       glm::vec3 vertex2) const;
 };
 
 class Triangle : public Object {
