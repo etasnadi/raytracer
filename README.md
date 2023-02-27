@@ -4,11 +4,13 @@ Raytracer based on Whitted, 1984 paper.
 
 The room scene showing the refractions and reflections for thin and dense objects.
 
-Only depends on `Qt` and `cmake`. Tested on Ubuntu 20.04 (should work on Windows as well).
+Only depends on `Qt` and `cmake` & `glm`. Tested on Ubuntu 20.04 (should work on Windows as well).
 
 Two primitives implemented so far:
 * Triangle
 * Sphere
+
+Entry point: `app.cc`.
 
 The `display.cc` manages the drawing to the Qt canvas and also handles the keyboard input to the worker thread (world can be rotated using the arrows).
 
