@@ -3,18 +3,25 @@
 
 #include <vector>
 
-template <class T> class ColorBuffer {
-private:
-  std::vector<T> c;
-  T maxIntensity;
-  T minIntensity;
+#define CUDA_TYPES
+// #define DEBUG_STDOUT
 
-public:
-  const int w, h;
-  ColorBuffer(int w, int h);
-  void setPixel(int x, int y, T intensity);
-  T getPixel(int x, int y, bool normalize = false);
-  int idx(int x, int y);
-};
+namespace raytracer {
+
+  template <class T> class ColorBuffer {
+  private:
+    T maxIntensity;
+    T minIntensity;
+
+  public:
+    std::vector<T> c;
+    const int w, h;
+    ColorBuffer(int w, int h);
+    void setPixel(int x, int y, T intensity);
+    T getPixel(int x, int y, bool normalize = false);
+    int idx(int x, int y);
+  };
+
+}
 
 #endif

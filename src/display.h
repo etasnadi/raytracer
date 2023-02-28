@@ -8,6 +8,8 @@
 
 #include "renderer.h"
 
+using namespace raytracer;
+
 class RenderWorker;
 
 class RenderingCanvas : public QLabel {

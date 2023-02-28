@@ -2,6 +2,7 @@
 # OpenMP cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
+OPTION(BUILD_CUDA_TESTS "Build the CUDA tests." OFF)
 OPTION(USE_CUDA "Use CUDA (not fully ported yet)" OFF)
 if(USE_CUDA)
     project(app VERSION 1.0.0 LANGUAGES CXX CUDA)
@@ -45,10 +46,6 @@ add_executable(app
     ${SOURCE_DIR}/display.cc
     ${SOURCE_DIR}/basic_types.cc
 )
-
-if(USE_CUDA)
-    set_source_files_properties(renderer.cc raytracer_basics.cc PROPERTIES LANGUAGE CUDA)
-endif()
 
 target_link_libraries(renderer OpenMP::OpenMP_CXX)
 

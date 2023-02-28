@@ -10,6 +10,8 @@
 #include "renderer.h"
 #include "basic_types.h"
 
+using namespace raytracer;
+
 ColorBuffer<glm::vec3> readImage(std::string fname) {
   QImage qtImage(fname.c_str());
   ColorBuffer<glm::vec3> texture(qtImage.width(), qtImage.height());

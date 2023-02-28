@@ -3,9 +3,13 @@
 
 #include "raytracer_basics.h"
 
-class RoomScene : public Scene {
-public:
-  void buildScene();
-};
+namespace raytracer {
+
+  class RoomScene : public Scene {
+  public:
+    void buildScene();
+  };
+
+}
 
 #endif
