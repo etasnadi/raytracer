@@ -1,0 +1,7 @@
+resources/
+stuff/
+set_cuda.sh
+
+build/
+build-archive/
+build-make/
